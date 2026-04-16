@@ -6,7 +6,7 @@ function App() {
 
   // load people from backend
   const loadPeople = () => {
-    fetch("http://localhost:5000/api/people")
+    fetch("https://family-tree-api-11b3.onrender.com/api/people")
       .then(res => res.json())
       .then(data => setPeople(data));
   };
@@ -19,7 +19,7 @@ function App() {
   const addPerson = async () => {
     if (!name) return;
 
-    await fetch("http://localhost:5000/api/people", {
+    await fetch("https://family-tree-api-11b3.onrender.com/api/people", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
