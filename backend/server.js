@@ -5,7 +5,9 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin: "https://family-tree.vercel.app"
+}));
 app.use(express.json());
 
 /* ---------------- MONGO CONNECT ---------------- */
@@ -38,7 +40,15 @@ app.get("/api/people", async (req, res) => {
 
 // add person
 app.post("/api/people", async (req, res) => {
-    const person = await Person.create(req.body);
+
+    const { name } = req.body;
+
+    if (!name || name.length > 50) {
+        return res.status(400).json({ error: "Invalid name" });
+    }
+
+    const person = await Person.create({ name });
+
     res.json(person);
 });
 
