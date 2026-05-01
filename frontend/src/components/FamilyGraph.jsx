@@ -28,26 +28,33 @@ export default function FamilyGraph({ data, selected, onSelect }) {
         });
 
         // -----------------------------
-        // ROOTS (no parents)
+        // SAFE ROOT DETECTION
         // -----------------------------
-        const roots = allNodes.filter(n => !parents[getId(n)]);
+        let roots = allNodes.filter(n => !parents[getId(n)]?.length);
 
-        if (!roots.length && allNodes.length) roots.push(allNodes[0]);
+        // fallback: ensure tree ALWAYS renders
+        if (!roots.length) {
+            roots = [allNodes[0]];
+        }
 
         // -----------------------------
-        // LEVEL ASSIGNMENT
+        // LEVEL ASSIGNMENT (SAFE DFS)
         // -----------------------------
         const levelMap = {};
         const visited = new Set();
 
         function walk(node, level) {
+            if (!node) return;
+
             const id = getId(node);
             if (visited.has(id)) return;
 
             visited.add(id);
             levelMap[id] = level;
 
-            (children[id] || []).forEach(childId => {
+            const kids = children[id] || [];
+
+            kids.forEach(childId => {
                 const child = allNodes.find(n => getId(n) === childId);
                 if (child) walk(child, level + 1);
             });
@@ -56,17 +63,29 @@ export default function FamilyGraph({ data, selected, onSelect }) {
         roots.forEach(r => walk(r, 0));
 
         // -----------------------------
+        // FORCE UNMAPPED NODES INTO TREE
+        // (prevents disappearing nodes)
+        // -----------------------------
+        allNodes.forEach(n => {
+            const id = getId(n);
+            if (levelMap[id] === undefined) {
+                levelMap[id] = 0; // fallback root level
+            }
+        });
+
+        // -----------------------------
         // GROUP BY LEVEL
         // -----------------------------
         const layers = {};
+
         allNodes.forEach(n => {
-            const level = levelMap[getId(n)] ?? 0;
+            const level = levelMap[getId(n)];
             if (!layers[level]) layers[level] = [];
             layers[level].push(n);
         });
 
         // -----------------------------
-        // POSITIONING
+        // POSITIONING (CENTERED)
         // -----------------------------
         const width = 1100;
         const layout = [];
@@ -78,7 +97,7 @@ export default function FamilyGraph({ data, selected, onSelect }) {
                 layout.push({
                     ...n,
                     x: spacing * (i + 1),
-                    y: level * 140 + 100
+                    y: Number(level) * 160 + 100
                 });
             });
         });
