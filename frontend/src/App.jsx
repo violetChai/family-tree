@@ -24,12 +24,13 @@ export default function App() {
     load();
   };
 
-  const updatePerson = async (id, name) => {
+  const updatePerson = async (id, data) => {
     await fetch(`http://localhost:5000/api/person/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name })
+      body: JSON.stringify(data)
     });
+
     load();
   };
 

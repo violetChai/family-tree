@@ -12,33 +12,32 @@ export default function FamilyGraph({ data, selected, onSelect }) {
         const getId = n => n._id;
 
         // -----------------------------
-        // BUILD MAPS
+        // BUILD CHILD MAP
         // -----------------------------
         const children = {};
-        const parents = {};
 
         links.forEach(l => {
             if (l.type === "parent") {
                 if (!children[l.from]) children[l.from] = [];
-                if (!parents[l.to]) parents[l.to] = [];
-
                 children[l.from].push(l.to);
-                parents[l.to].push(l.from);
             }
         });
 
         // -----------------------------
-        // SAFE ROOT DETECTION
+        // ✅ CORRECT ROOT DETECTION
         // -----------------------------
-        let roots = allNodes.filter(n => !parents[getId(n)]?.length);
+        const hasParent = new Set(
+            links
+                .filter(l => l.type === "parent")
+                .map(l => l.to)
+        );
 
-        // fallback: ensure tree ALWAYS renders
-        if (!roots.length) {
-            roots = [allNodes[0]];
-        }
+        let roots = allNodes.filter(n => !hasParent.has(getId(n)));
+
+        if (!roots.length) roots = [allNodes[0]];
 
         // -----------------------------
-        // LEVEL ASSIGNMENT (SAFE DFS)
+        // LEVEL ASSIGNMENT
         // -----------------------------
         const levelMap = {};
         const visited = new Set();
@@ -52,9 +51,7 @@ export default function FamilyGraph({ data, selected, onSelect }) {
             visited.add(id);
             levelMap[id] = level;
 
-            const kids = children[id] || [];
-
-            kids.forEach(childId => {
+            (children[id] || []).forEach(childId => {
                 const child = allNodes.find(n => getId(n) === childId);
                 if (child) walk(child, level + 1);
             });
@@ -62,15 +59,10 @@ export default function FamilyGraph({ data, selected, onSelect }) {
 
         roots.forEach(r => walk(r, 0));
 
-        // -----------------------------
-        // FORCE UNMAPPED NODES INTO TREE
-        // (prevents disappearing nodes)
-        // -----------------------------
+        // fallback for disconnected nodes
         allNodes.forEach(n => {
             const id = getId(n);
-            if (levelMap[id] === undefined) {
-                levelMap[id] = 0; // fallback root level
-            }
+            if (levelMap[id] === undefined) levelMap[id] = 0;
         });
 
         // -----------------------------
@@ -85,19 +77,22 @@ export default function FamilyGraph({ data, selected, onSelect }) {
         });
 
         // -----------------------------
-        // POSITIONING (CENTERED)
+        // ✅ POSITIONING (CENTERED + DOWNWARD)
         // -----------------------------
-        const width = 1100;
         const layout = [];
+        const width = 1100;
+        const levelHeight = 160;
+        const nodeWidth = 140;
 
         Object.entries(layers).forEach(([level, group]) => {
-            const spacing = width / (group.length + 1);
+            const totalWidth = group.length * nodeWidth;
+            const startX = (width - totalWidth) / 2;
 
             group.forEach((n, i) => {
                 layout.push({
                     ...n,
-                    x: spacing * (i + 1),
-                    y: Number(level) * 160 + 100
+                    x: startX + i * nodeWidth,
+                    y: Number(level) * levelHeight + 80 // 👈 DOWNWARD growth
                 });
             });
         });

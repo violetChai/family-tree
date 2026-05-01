@@ -8,62 +8,133 @@ export default function Sidebar({
     deletePerson,
     createRelationship
 }) {
-    const [name, setName] = useState("");
+    const [form, setForm] = useState({
+        name: "",
+        bio: "",
+        birthYear: "",
+        deathYear: "",
+        photo: ""
+    });
+
     const [target, setTarget] = useState("");
 
     useEffect(() => {
-        setName(selected?.name || "");
+        if (selected) {
+            setForm({
+                name: selected.name || "",
+                bio: selected.bio || "",
+                birthYear: selected.birthYear || "",
+                deathYear: selected.deathYear || "",
+                photo: selected.photo || ""
+            });
+        }
     }, [selected]);
 
-    const link = (type) => {
-        if (!selected || !target) return;
-        createRelationship(selected._id, target, type);
-        setTarget("");
+    const updateField = (key, value) => {
+        setForm(prev => ({ ...prev, [key]: value }));
+    };
+
+    const btn = {
+        padding: "8px",
+        marginTop: "6px",
+        borderRadius: "6px",
+        border: "1px solid #ccc",
+        cursor: "pointer",
+        background: "white"
     };
 
     return (
         <div style={{
-            width: 260,
+            width: 300,
             padding: 16,
             borderLeft: "1px solid #e5e7eb",
-            background: "#f9fafb"
+            background: "#f9fafb",
+            overflowY: "auto"
         }}>
-            <h3 style={{ marginBottom: 10 }}>People</h3>
+            <h3>👤 Person</h3>
 
             {/* CREATE */}
             <input
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="Enter name"
+                placeholder="New person name"
+                value={form.name}
+                onChange={e => updateField("name", e.target.value)}
                 style={{ width: "100%", marginBottom: 8 }}
             />
 
-            <button onClick={() => {
-                if (!name.trim()) return;
-                createPerson(name);
-                setName("");
+            <button style={btn} onClick={() => {
+                if (!form.name.trim()) return;
+                createPerson(form.name);
+                setForm(prev => ({ ...prev, name: "" }));
             }}>
                 ➕ Add Person
             </button>
 
-            {/* EDIT */}
+            {/* PROFILE */}
             {selected && (
                 <>
                     <hr />
 
-                    <h4>Edit</h4>
+                    <h4>✏️ Edit Profile</h4>
 
-                    <button onClick={() => updatePerson(selected._id, name)}>
-                        💾 Save
+                    <input
+                        value={form.name}
+                        onChange={e => updateField("name", e.target.value)}
+                        placeholder="Name"
+                    />
+
+                    <input
+                        value={form.birthYear}
+                        onChange={e => updateField("birthYear", e.target.value)}
+                        placeholder="Birth Year"
+                    />
+
+                    <input
+                        value={form.deathYear}
+                        onChange={e => updateField("deathYear", e.target.value)}
+                        placeholder="Death Year"
+                    />
+
+                    <input
+                        value={form.photo}
+                        onChange={e => updateField("photo", e.target.value)}
+                        placeholder="Photo URL"
+                    />
+
+                    <textarea
+                        value={form.bio}
+                        onChange={e => updateField("bio", e.target.value)}
+                        placeholder="Biography"
+                        style={{ width: "100%", minHeight: 80 }}
+                    />
+
+                    <button style={btn} onClick={() => {
+                        console.log("SAVE CLICKED", form);
+                        updatePerson(selected._id, form)
+                    }}
+                    >
+                        💾 Save Changes
                     </button>
 
-                    <button onClick={() => deletePerson(selected._id)}>
-                        🗑 Delete
+                    <button style={btn} onClick={() => deletePerson(selected._id)}>
+                        🗑 Delete Person
                     </button>
+
+                    {/* IMAGE PREVIEW */}
+                    {form.photo && (
+                        <img
+                            src={form.photo}
+                            alt=""
+                            style={{
+                                width: "100%",
+                                marginTop: 10,
+                                borderRadius: "8px"
+                            }}
+                        />
+                    )}
 
                     <hr />
 
-                    <h4>Relationships</h4>
+                    <h4>🔗 Relationships</h4>
 
                     <select
                         value={target}
@@ -80,14 +151,24 @@ export default function Sidebar({
                             ))}
                     </select>
 
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        <button onClick={() => link("parent")}>⬆ Add Parent</button>
-                        <button onClick={() => link("child")}>⬇ Add Child</button>
-                        <button onClick={() => link("spouse")}>💍 Add Spouse</button>
-                        <button onClick={() => link("sibling")}>👥 Add Sibling</button>
-                    </div>
+                    <button style={btn} onClick={() => createRelationship(selected._id, target, "parent")}>
+                        ⬆ Add Parent
+                    </button>
+
+                    <button style={btn} onClick={() => createRelationship(selected._id, target, "child")}>
+                        ⬇ Add Child
+                    </button>
+
+                    <button style={btn} onClick={() => createRelationship(selected._id, target, "spouse")}>
+                        💍 Add Spouse
+                    </button>
+
+                    <button style={btn} onClick={() => createRelationship(selected._id, target, "sibling")}>
+                        👥 Add Sibling
+                    </button>
                 </>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
