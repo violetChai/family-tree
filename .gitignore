@@ -13,3 +13,7 @@ build
 # logs
 logs
 *.log
+
+# mongoDB
+playground-1.mongodb.js
+*.mongodb.js

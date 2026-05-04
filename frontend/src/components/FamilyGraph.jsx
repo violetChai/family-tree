@@ -155,26 +155,30 @@ export default function FamilyGraph({ data, selected, onSelect }) {
                     onClick={() => onSelect(n)}
                     style={{ cursor: "pointer" }}
                 >
-                    <rect
-                        x={-65}
-                        y={-22}
-                        width={130}
-                        height={44}
-                        rx={12}
-                        fill={selected?._id === n._id ? "#fde68a" : "#ffffff"}
-                        stroke="#1f2937"
-                    />
-
-                    <text
-                        textAnchor="middle"
-                        dy={5}
-                        fontSize="13"
-                        fontWeight="500"
-                    >
-                        {n.name || "(Unnamed)"}
-                    </text>
-                </g>
-            ))}
+                    <foreignObject x={-70} y={-40} width={140} height={80}>
+                        <div style={{
+                            background: "white",
+                            borderRadius: "12px",
+                            border: "1px solid #1f2937",
+                            padding: "6px",
+                            textAlign: "center"
+                        }}>
+                            <img
+                                src={n.photo || "https://via.placeholder.com/40"}
+                                alt=""
+                                style={{
+                                    width: "40px",
+                                    height: "40px",
+                                    borderRadius: "50%",
+                                    objectFit: "cover"
+                                }}
+                            />
+                            <div style={{ fontSize: "12px", marginTop: "4px" }}>
+                                {n.name}
+                            </div>
+                        </div>
+                    </foreignObject>
+                </g>))}
 
         </svg>
     );
