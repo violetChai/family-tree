@@ -84,6 +84,8 @@ export default function FamilyGraph({ data, selected, onSelect }) {
         const levelHeight = 160;
         const nodeWidth = 140;
 
+        const maxLevel = Math.max(...Object.values(levelMap));
+
         Object.entries(layers).forEach(([level, group]) => {
             const totalWidth = group.length * nodeWidth;
             const startX = (width - totalWidth) / 2;
@@ -92,7 +94,7 @@ export default function FamilyGraph({ data, selected, onSelect }) {
                 layout.push({
                     ...n,
                     x: startX + i * nodeWidth,
-                    y: Number(level) * levelHeight + 80 // 👈 DOWNWARD growth
+                    y: (maxLevel - Number(level)) * levelHeight + 80
                 });
             });
         });
